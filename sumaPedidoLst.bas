@@ -28,19 +28,19 @@ Form_frm_Pedidos.txt_totallst.Value = suma - Form_frm_Pedidos.txtTotDesc
 'End If
 End Sub
 
-Function BorrarDetalleDescuento(txtBox As TextBox, palabra As String)
+Function BorrarDetalleDescuento(TxtBox As TextBox, palabra As String)
     Dim lineas As Variant
     Dim nuevaTexto As String
     Dim linea As Variant
     Dim descuento As Long
     ' Verifica si el TextBox está vacío
-    If IsNull(txtBox.Value) Or txtBox.Value = "" Then
+    If IsNull(TxtBox.Value) Or TxtBox.Value = "" Then
         'MsgBox "El campo está vacío.", vbExclamation, "Aviso"
         Exit Function
     End If
 If palabra = "total" Then
 
-    lineas = Split(txtBox.Value, vbCrLf)
+    lineas = Split(TxtBox.Value, vbCrLf)
     
     ' Recorre cada línea
     For Each linea In lineas
@@ -58,7 +58,7 @@ If palabra = "total" Then
         'suma = suma + CDbl(Form_frm_Pedidos.ListaPedido.Column(2, i))
         'Next i
           'If Form_frm_Pedidos.txtSumaDedescuentosXProductos = "" Or Form_frm_Pedidos.txtSumaDedescuentosXProductos = 0 Or IsNull(Form_frm_Pedidos.txtSumaDedescuentosXProductos) Then
-            descuento = ((ExtraerNumerosHastaPorcentaje(txtBox) / 100) * Form_frm_Pedidos.txtSubTotal) '(Form_frm_Pedidos.txt_totallst + Form_frm_Pedidos.txtTotDesc))
+            descuento = ((ExtraerNumerosHastaPorcentaje(TxtBox) / 100) * Form_frm_Pedidos.txtSubTotal) '(Form_frm_Pedidos.txt_totallst + Form_frm_Pedidos.txtTotDesc))
           'Else
             'descuento = ((ExtraerNumerosHastaPorcentaje(txtBox) / 100) * (Form_frm_Pedidos.txt_totallst + Form_frm_Pedidos.txtTotDesc)) '((Form_frm_Pedidos.txtSubTotal - Form_frm_Pedidos.txtSumaDedescuentosXProductos)))
             
@@ -76,11 +76,11 @@ If palabra = "total" Then
     End If
     
     ' Asigna el texto modificado al TextBox
-    txtBox.Value = nuevaTexto
+    TxtBox.Value = nuevaTexto
 
 Else
     ' Divide el contenido del TextBox en líneas, usando salto de línea como delimitador
-    lineas = Split(txtBox.Value, vbCrLf)
+    lineas = Split(TxtBox.Value, vbCrLf)
     
     ' Recorre cada línea
     For Each linea In lineas
@@ -89,7 +89,7 @@ Else
             nuevaTexto = nuevaTexto & linea & vbCrLf
         Else
         
-            descuento = (ExtraerNumerosHastaPorcentaje(txtBox) / 100) * Form_frm_Pedidos.ListaPedido.Column(2)
+            descuento = (ExtraerNumerosHastaPorcentaje(TxtBox) / 100) * Form_frm_Pedidos.ListaPedido.Column(2)
             Form_frm_Pedidos.txtTotDesc = Form_frm_Pedidos.txtTotDesc - descuento
             'If Form_frm_Pedidos.txtSumaDedescuentosXProductos > 0 Or Form_frm_Pedidos.txtSumaDedescuentosXProductos <> "" Or Not IsNull(Form_frm_Pedidos.txtSumaDedescuentosXProductos) Then
             ' Si la línea contiene exactamente la palabra, la elimina por completo
@@ -105,11 +105,11 @@ Else
     End If
     
     ' Asigna el texto modificado al TextBox
-    txtBox.Value = nuevaTexto
+    TxtBox.Value = nuevaTexto
 End If
 End Function
 
-Function ExtraerNumerosHastaPorcentaje(txtBox As TextBox) As Integer
+Function ExtraerNumerosHastaPorcentaje(TxtBox As TextBox) As Integer
     Dim texto As String
     Dim numero As String
     Dim i As Integer
@@ -124,7 +124,7 @@ Function ExtraerNumerosHastaPorcentaje(txtBox As TextBox) As Integer
 '    End If
     
     ' Asigna el contenido del TextBox a la variable texto
-    texto = txtBox.Value
+    texto = TxtBox.Value
     
     ' Recorre cada carácter de la cadena hasta encontrar "%"
     For i = 1 To Len(texto)

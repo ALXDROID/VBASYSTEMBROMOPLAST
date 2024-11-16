@@ -12,7 +12,7 @@ Sub ultimoPedido()
     ' Obtener el ID del cliente desde un TextBox o de alguna manera
 '    clienteID = Form_BuscarClientes.ListaClientes.Column(0)
     clienteID = Form_frm_ModuloClientes.ListaClientes.Column(0)
-    
+    If Not IsNull(clienteID) Then
     ' Construir la consulta SQL
     strSQL = "SELECT MAX(ID_Pedido)as maxID FROM Pedido WHERE Cliente = " & clienteID
     
@@ -67,7 +67,7 @@ Else
     Set rs = Nothing
     Set db = Nothing
 End If
-
+End If
 End Sub
 
 Sub IDProveedor()

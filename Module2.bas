@@ -1,120 +1,105 @@
-'Option Compare Database
-'Option Explicit
-'
-'
-'
-'Private rs As ADODB.Recordset
-'Private cnn As ADODB.Connection
-'Private strSQL As String
-'
-'''''''''''''''''''''''''''''''''''''''''''''
-''''''Initilisation and kill code''''''''''''
-'''''''''''''''''''''''''''''''''''''''''''''
-'Private Sub Class_Initialize()
-'Set cnn = CurrentProject.Connection
-'Set rs = New ADODB.Recordset
-'End Sub
-'
-'Private Sub Class_Terminate()
-'Call killRecordset
-'End Sub
-'
-'Public Sub loadData(id As Long)
-''This sub procedure loads the data based upon the
-''passed in ID value -1 means new record
-'
-'If id > 0 Then
-'    strSQL = "Select * From tbl_Cliente Where [ID_cliente]=" & Id_Cliente
-'    Call loadRecordset(strSQL)
-'    Call setFields
-'Else
-'    m_ID = -1
-'    strSQL = "Select * From tbl_Cliente "
-'    Call loadRecordset(strSQL)
-'End If
-'End Sub
-'
-'''''''''''''''''''''''''''''''''''''''''''''
-'''''''''''''''Recordset code''''''''''''''''
-'''''''''''''''''''''''''''''''''''''''''''''
-'
-'Private Sub loadRecordset(strSQL As String)
-'With rs
-'        .Open strSQL, cnn, adOpenKeyset, adLockOptimistic
-'        .MoveLast
-'        .MoveFirst
-'    End With
-'End Sub
-'
-'Private Sub killRecordset()
-'If Not rs Is Nothing Then rs.Close
-'Set rs = Nothing
-'Set cnn = Nothing
-'End Sub
-'
-'Public Sub setFields()
-'With rs
-'    m_ID_cliente = .Fields("ID_cliente")
-'    m_nom_cliente = .Fields("nom_cliente")
-'    m_apellido_cliente = .Fields("apellido_cliente")
-'    m_comentario = .Fields("comentario")
-'    m_telefono = .Fields("telefono")
-'    m_direccion = .Fields("direccion")
-'End With
-'End Sub
-'
-'''''''''''''''''''''''''''''''''''''''''''''
-'''''''''''''''Record Operations'''''''''''''
-'''''''''''''''''''''''''''''''''''''''''''''
-'
-'Public Function SaveRecord() As Boolean
-'
-'
-'
-'With rs
-'    If m_ID_cliente > 0 Then
-'
-'        .Fields("ID_cliente") = m_ID_cliente
-'        .Fields("nom_cliente") = m_nom_cliente
-'        .Fields("apellido_cliente") = m_apellido_cliente
-'        .Fields("comentario") = m_comentario
-'        .Fields("telefono") = m_telefono
-'        .Fields("direccion") = m_direccion
-'
-'        .update
-'    Else
-'        .AddNew
-'        .Fields("nom_cliente") = m_nom_cliente
-'        .Fields("apellido_cliente") = m_apellido_cliente
-'        .Fields("comentario") = m_comentario
-'        .Fields("telefono") = m_telefono
-'        .Fields("direccion") = m_direccion
-'        .update
-'    End If
-'
-'End With
-'
-'End Function
-'
-'Public Function UndoRecord() As Boolean
-'With rs
-'    m_ID = .Fields("ID")
-'    m_FilmName = .Fields("FilmName")
-'    m_YearOfRelease = .Fields("YearOfRelease")
-'    m_RottenTomato = .Fields("RottenTomatoes")
-'    m_Director = .Fields("DirectorID")
-'End With
-'End Function
-'
-'Public Function DeleteRecord() As Boolean
-'Dim lngID As Long
-'
-'lngID = m_ID
-''We are going to use a simple query to delete the record
-'Call killRecordset
-'
-'strSQL = "DELETE FROM Films WHERE [ID]=" & lngID
-'CurrentDb.Execute strSQL, dbFailOnError
-'
-'End Function
-'
+Option Compare Database
+Option Explicit
+
+' ----------------------------------------------------------------
+' Procedure : CreateModernOnOff
+' DateTime  : 7/26/2022 22:57
+' Author    : Mike Wolfe
+' Source    : https://nolongerset.com/modern-on-off/
+' Purpose   : Create a modern-looking on/off button on an Access form.
+' ----------------------------------------------------------------
+Sub CreateModernOnOff(FormName As String, _
+                      Optional IncludeOnOffTextBox As Boolean = False)
+    'Open the form in design view...
+    If SysCmd(acSysCmdGetObjectState, acForm, FormName) = 0 Then
+        '...if it's not already open or...
+        DoCmd.OpenForm FormName, acDesign
+    ElseIf Forms(FormName).CurrentView <> 0 Then
+        '...if it is open but not in Design view
+        DoCmd.OpenForm FormName, acDesign
+    End If
+    
+    'Create the toggle button in the upper left corner of the form
+    '   (you can move it manually in the form designer later)
+    Dim ToggleBtn As ToggleButton
+    Set ToggleBtn = CreateControl(FormName, acToggleButton)
+    With ToggleBtn
+        'Disable bevel effect
+        .Bevel = 0
+        
+        'Ensure shape is a rounded rectangle
+        .Shape = 2
+        
+        'Disable all tinting and shading
+        .BackTint = 100
+        .BorderTint = 100
+        .HoverTint = 100
+        .PressedShade = 100
+    
+        'Set border properties
+        .BorderStyle = 1 'Solid
+        .BorderWidth = 3
+        
+        'Set optimal height/width
+        .Height = 300
+        .Width = 780
+        
+        'Set Font properties
+        .FontName = "Wingdings"
+        .FontSize = 10
+        .FontBold = True
+        
+        'Set properties for when the control is OFF
+        .BackColor = vbWhite
+        .ForeColor = vbBlack
+        .HoverColor = vbWhite
+        
+        'Set properties for when the control is ON
+        .PressedColor = vbBlue
+        .PressedForeColor = vbWhite
+        
+        'Call the FormatToggle() function whenever the control is toggled ON/OFF
+        .AfterUpdate = "=FormatToggle([ActiveControl])"
+        
+        'Format the control as OFF for design purposes
+        .Caption = "l  "   'lowercase "l" is a filled circle glyph in the Wingdings font
+        .BorderColor = vbBlack
+
+    End With
+    
+    Debug.Print "Be sure to add the line..." & vbNewLine
+    Debug.Print "    FormatToggle Me." & ToggleBtn.Name & vbNewLine
+    Debug.Print "...to the Form_Current() event handler for form " & FormName
+    
+    If IncludeOnOffTextBox Then
+        Dim TxtBox As TextBox
+        Set TxtBox = CreateControl(FormName, acTextBox)
+        With TxtBox
+            .ControlSource = "=IIf(" & ToggleBtn.Name & ", 'ON', 'OFF')"
+            .BorderStyle = 0 'Transparent
+            .Enabled = False
+            .Locked = True
+            .Left = ToggleBtn.Width + 100
+            .Height = ToggleBtn.Height
+        End With
+        
+    End If
+End Sub
+
+
+Function FormatToggle(ToggleBtn As ToggleButton)
+    Const Buffer As Long = 2
+    With ToggleBtn
+        If .Value Then
+            'When button is ON, leading spaces force
+            '   disc icon to the right
+            .Caption = Space(Buffer) & "l"
+            .BorderColor = vbBlue
+        Else
+            'When button is OFF, trailing spaces force
+            '   disc icon to the left
+            .Caption = "l" & Space(Buffer)
+            .BorderColor = vbBlack
+        End If
+    End With
+End Function
