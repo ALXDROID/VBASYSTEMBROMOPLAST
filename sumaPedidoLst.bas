@@ -110,7 +110,7 @@ End If
 End Function
 
 Function ExtraerNumerosHastaPorcentaje(TxtBox As TextBox) As Integer
-    Dim texto As String
+    Dim Texto As String
     Dim numero As String
     Dim i As Integer
     
@@ -124,12 +124,12 @@ Function ExtraerNumerosHastaPorcentaje(TxtBox As TextBox) As Integer
 '    End If
     
     ' Asigna el contenido del TextBox a la variable texto
-    texto = TxtBox.Value
+    Texto = TxtBox.Value
     
     ' Recorre cada carácter de la cadena hasta encontrar "%"
-    For i = 1 To Len(texto)
+    For i = 1 To Len(Texto)
         Dim caracter As String
-        caracter = Mid(texto, i, 1)
+        caracter = Mid(Texto, i, 1)
         
         ' Verifica si el carácter es "%" y sale del bucle si lo encuentra
         If caracter = "%" Then
@@ -174,4 +174,64 @@ Form_frm_ModuloClientes.txt_Total = sum - Form_frm_ModuloClientes.txtdesc
 
     'totalPedido = sum
 'End If
+End Sub
+
+Sub restastock()
+
+    Dim db As DAO.Database
+    Dim rs As DAO.Recordset
+    Dim datos As String
+    Dim filas() As String
+    Dim columnas() As String
+    Dim i As Integer
+    Dim producto As String
+    Dim valorCambio As Long
+    Dim sql As String
+
+    ' Obtener el contenido del campo Long Text (RowSource)
+    datos = Form_frm_Pedidos.ListaPedido.RowSource ' Reemplaza con el control o fuente de texto
+
+    ' Dividir las filas (asume salto de línea como delimitador)
+    filas = Split(datos, vbCrLf)
+
+    ' Abrir la tabla Productos
+    Set db = CurrentDb
+    Set rs = db.OpenRecordset("SELECT nombre, stockActual FROM Productos")
+
+    ' Recorrer cada producto de la tabla
+    Do While Not rs.EOF
+        producto = rs!Nombre ' Nombre del producto actual
+        valorCambio = 0 ' Inicializar valor de cambio
+
+        ' Recorrer cada fila del RowSource
+        For i = LBound(filas) To UBound(filas)
+            ' Dividir columnas de la fila (delimitador ';')
+            columnas = Split(filas(i), ";")
+
+            ' Verificar si el producto coincide con la primera columna
+            If UBound(columnas) >= 1 And columnas(1) = producto Then
+                ' Sumar o restar el valor de la columna 2 (índice 1)
+                valorCambio = valorCambio + CLng(columnas(0))
+            End If
+        Next i
+
+        ' Actualizar el valor en la tabla Productos
+        If valorCambio <> 0 And columnas(1) = producto Then
+            sql = "UPDATE Productos SET stockActual = stockActual - " & valorCambio & " WHERE nombre = '" & producto & "';"
+            DoCmd.RunSQL sql
+        End If
+
+        ' Mover al siguiente registro
+        rs.MoveNext
+    Loop
+
+    ' Cerrar el Recordset
+    rs.Close
+    Set rs = Nothing
+    Set db = Nothing
+
+    MsgBox "Stock actualizado correctamente.", vbInformation
+
+
+    
 End Sub

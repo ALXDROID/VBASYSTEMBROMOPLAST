@@ -96,40 +96,58 @@ Set conexion = CurrentProject.Connection
 'Dim sqlCuenta, precio As String
 Dim instruccion As String
 Dim txtArticulo As Control
-'Dim i As Integer
-
+Dim cantidad As Long
+Dim cantidadBD As Long
   'If boton.Name = nomBtn Then
 
-     instruccion = "SELECT nombre ,precioUnidad FROM Productos WHERE nombre = '" & nomArt & "';"
+     instruccion = "SELECT nombre ,stockActual, precioUnidad FROM Productos WHERE nombre = '" & nomArt & "';"
      Dim memo As New ADODB.Recordset
      memo.Open instruccion, conexion
-
-  Set txtArticulo = Form_frm_Pedidos.txt_cantidad
-
-        If Form_frm_Pedidos.txtCantidadProducto.Value = "" Or Form_frm_Pedidos.txtCantidadProducto.Value = 0 Or IsNull(Form_frm_Pedidos.txtCantidadProducto.Value) Then
+Form_frm_Pedidos.txtBDStock.Value = memo!stockActual
+cantidadBD = Form_frm_Pedidos.txtBDStock.Value
+  Set txtArticulo = Form_frm_Pedidos.txtCantidadProducto
+'  If Form_frm_Pedidos.txtCantidadProducto = "" Or IsNull(Form_frm_Pedidos.txtCantidadProducto) Then
+'       Form_frm_Pedidos.txtCantidadProducto=
+If txtArticulo.Value = "" Or IsNull(txtArticulo.Value) Or txtArticulo.Value = 0 Then
+    Form_frm_Pedidos.txtCantidadProducto.Value = 1
+    End If
+'cantidad = txtArticulo.Value
+        If txtArticulo.Value = 0 Or IsNull(txtArticulo.Value) And ((cantidadBD - txtArticulo.Value) >= 0) Then
            
            Form_frm_Pedidos.txtCantidadProducto.Value = 1
              
-            txtArticulo.Value = 1
+            'txtArticulo.Value = 1
              
                  'If txtArticulo.Value = 0 Or txtArticulo.Value = "" Then
               'txtArticulo.Value = 1
               Form_frm_Pedidos.textoprecio.Value = memo!PrecioUnidad
-              
+        ElseIf (cantidadBD - txtArticulo.Value) < 0 Then
+             'MsgBox "NO HAY STOCK PARA ESTE PRODUCTO", vbCritical, "BROMOPLAST"
+         Form_frm_Pedidos.txtCantTblPrStock.Value = "N"
+         Exit Sub
         End If
-          If Form_frm_Pedidos.txtCantidadProducto.Value = 1 Then
+          If txtArticulo.Value = 1 And (cantidadBD - txtArticulo.Value) >= 0 Then
              
-            txtArticulo.Value = Form_frm_Pedidos.txtCantidadProducto.Value
+            'txtArticulo.Value = Form_frm_Pedidos.txtCantidadProducto.Value
             Form_frm_Pedidos.textoprecio.Value = memo!PrecioUnidad
+          ElseIf (cantidadBD - txtArticulo.Value) < 0 Then
+             'MsgBox "NO HAY STOCK PARA ESTE PRODUCTO", vbCritical, "BROMOPLAST"
+             Form_frm_Pedidos.txtCantTblPrStock.Value = "N"
+             Exit Sub
           End If
       
           
-          If Form_frm_Pedidos.txtCantidadProducto.Value > 1 Then
+          If txtArticulo.Value > 1 And (cantidadBD - txtArticulo.Value) >= 0 Then
               'For i = 2 To txtArticulo.Value Step 1
              
-            txtArticulo.Value = Form_frm_Pedidos.txtCantidadProducto.Value
-                  Form_frm_Pedidos.textoprecio.Value = txtArticulo.Value * memo!PrecioUnidad
+            'txtArticulo.Value = Form_frm_Pedidos.txtCantidadProducto.Value
+                  Form_frm_Pedidos.textoprecio.Value = Form_frm_Pedidos.txtCantidadProducto.Value * memo!PrecioUnidad
              ' Next i
+          ElseIf (cantidadBD - txtArticulo.Value) < 0 Then
+             'MsgBox "NO HAY STOCK PARA ESTE PRODUCTO", vbCritical, "BROMOPLAST"
+             Form_frm_Pedidos.txtCantTblPrStock.Value = "N"
+             Exit Sub
+             
         End If
         
 
