@@ -109,7 +109,8 @@ cantidadBD = Form_frm_Pedidos.txtBDStock.Value
 '  If Form_frm_Pedidos.txtCantidadProducto = "" Or IsNull(Form_frm_Pedidos.txtCantidadProducto) Then
 '       Form_frm_Pedidos.txtCantidadProducto=
 If txtArticulo.Value = "" Or IsNull(txtArticulo.Value) Or txtArticulo.Value = 0 Then
-    Form_frm_Pedidos.txtCantidadProducto.Value = 1
+    'Form_frm_Pedidos.txtCantidadProducto.Value = 1
+    txtArticulo.Value = 1
     End If
 'cantidad = txtArticulo.Value
         If txtArticulo.Value = 0 Or IsNull(txtArticulo.Value) And ((cantidadBD - txtArticulo.Value) >= 0) Then
@@ -336,7 +337,7 @@ Set bd = Nothing
     Report_Pedido.Fecha.Value = Format(rs!Fecha, "dd/mm/yyyy")
      Report_Pedido.Factura.Value = rs!Factura
      Report_Pedido.txtdesc = rs!Descuentos
-    Report_Pedido.Lista.RowSource = rs!Descripcion
+    Report_Pedido.Lista.RowSource = Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.RowSource 'rs!Descripcion
     Report_Pedido.Lista.Requery
     
 On Error Resume Next

@@ -32,7 +32,7 @@ Function BorrarDetalleDescuento(TxtBox As TextBox, palabra As String)
     Dim lineas As Variant
     Dim nuevaTexto As String
     Dim linea As Variant
-    Dim descuento As Long
+    Dim descuento, actTotal As Long
     ' Verifica si el TextBox está vacío
     If IsNull(TxtBox.Value) Or TxtBox.Value = "" Then
         'MsgBox "El campo está vacío.", vbExclamation, "Aviso"
@@ -107,6 +107,7 @@ Else
     ' Asigna el texto modificado al TextBox
     TxtBox.Value = nuevaTexto
 End If
+
 End Function
 
 Function ExtraerNumerosHastaPorcentaje(TxtBox As TextBox) As Integer
@@ -189,7 +190,7 @@ Sub restastock()
     Dim sql As String
 
     ' Obtener el contenido del campo Long Text (RowSource)
-    datos = Form_frm_Pedidos.ListaPedido.RowSource ' Reemplaza con el control o fuente de texto
+    datos = Forms!frm_Clientes!frm_Pedidos.Form.ListaPedido.RowSource ' Reemplaza con el control o fuente de texto
 
     ' Dividir las filas (asume salto de línea como delimitador)
     filas = Split(datos, vbCrLf)
@@ -214,17 +215,23 @@ Sub restastock()
                 valorCambio = valorCambio + CLng(columnas(0))
             End If
         Next i
-
+On Error Resume Next
         ' Actualizar el valor en la tabla Productos
-        If valorCambio <> 0 And columnas(1) = producto Then
-            sql = "UPDATE Productos SET stockActual = stockActual - " & valorCambio & " WHERE nombre = '" & producto & "';"
+        If valorCambio >= 0 And columnas(1) = producto And valorCambio <> Null Then
+            sql = "UPDATE Productos SET stockActual = (stockActual - " & valorCambio & ") WHERE nombre = '" & producto & "';"
             DoCmd.RunSQL sql
         End If
 
         ' Mover al siguiente registro
         rs.MoveNext
     Loop
+If Err.Number = 9 Then
+    'MsgBox "El formulario o control no existe. Revisa los nombres."
+    Err.Clear ' Limpiar el error
+    Exit Sub
+End If
 
+On Error GoTo 0 ' Restaurar el manejo normal de errores
     ' Cerrar el Recordset
     rs.Close
     Set rs = Nothing

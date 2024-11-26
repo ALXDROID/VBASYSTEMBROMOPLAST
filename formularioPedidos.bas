@@ -136,6 +136,9 @@ Sub idCiudad()
     Dim CiuID As String
     
     'ProveID = Form_frm_Productos.cmbProvee.Value
+    If IsNull(Form_frm_ModuloClientes.cmbBuscarCiu.Column(1)) Then
+        Exit Sub
+    End If
 CiuID = Form_frm_ModuloClientes.cmbBuscarCiu.Column(1)
 'If IsNull(ProveID) Then
     strSQL3 = "SELECT ID_Ciudad FROM Ciudad WHERE Nombre = '" & CiuID & "'"
