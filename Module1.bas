@@ -96,7 +96,7 @@ Set conexion = CurrentProject.Connection
 'Dim sqlCuenta, precio As String
 Dim instruccion As String
 Dim txtArticulo As Control
-Dim cantidad As Long
+Dim Cantidad As Long
 Dim cantidadBD As Long
   'If boton.Name = nomBtn Then
 

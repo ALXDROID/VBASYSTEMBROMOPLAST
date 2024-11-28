@@ -6,16 +6,16 @@ Sub Detalle()
     Dim rs As DAO.Recordset
     Dim strSQL As String
     Dim Fecha As Date
-    Dim pedidoID As Integer
+    Dim PedidoId As Integer
 
     ' Obtener y formatear la fecha
     Fecha = Form_frm_ModuloClientes.cmbFechaFact.Value
     
     ' Obtener el ID del pedido
-    pedidoID = Form_frm_ModuloClientes.txtIDPed.Value
+    PedidoId = Form_frm_ModuloClientes.txtIDPed.Value
     
     ' Construir la consulta SQL con fechas rodeadas por #
-    strSQL = "SELECT * FROM Pedido WHERE Fecha = #" & Format(Fecha, "mm/dd/yyyy") & "# AND ID_Pedido = " & pedidoID
+    strSQL = "SELECT * FROM Pedido WHERE Fecha = #" & Format(Fecha, "mm/dd/yyyy") & "# AND ID_Pedido = " & PedidoId
     
     ' Abrir la base de datos y el conjunto de registros
     Set db = CurrentDb

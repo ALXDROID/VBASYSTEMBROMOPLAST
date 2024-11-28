@@ -7,7 +7,7 @@ Sub ultimoPedido()
    Dim db As DAO.Database
     Dim rs As DAO.Recordset
     Dim strSQL, strSQL1 As String
-    Dim clienteID, pedidoID As Integer
+    Dim clienteID, PedidoId As Integer
     
     ' Obtener el ID del cliente desde un TextBox o de alguna manera
 '    clienteID = Form_BuscarClientes.ListaClientes.Column(0)
@@ -22,13 +22,13 @@ Sub ultimoPedido()
     ' Abrir el Recordset con la consulta
     Set rs = db.OpenRecordset(strSQL, dbOpenDynaset)
     If Not IsNull(rs!maxID) Then
-    pedidoID = rs!maxID
+    PedidoId = rs!maxID
     
     rs.Close
     Set rs = Nothing
     Set db = Nothing
 
-    strSQL1 = "SELECT  Cliente, Fecha,  Factura, Descripcion, Descuentos FROM Pedido WHERE ID_Pedido = " & pedidoID  'Format(Fecha, 'dd/mm/yyyy') AS FechaFormateada,
+    strSQL1 = "SELECT  Cliente, Fecha,  Factura, Descripcion, Descuentos FROM Pedido WHERE ID_Pedido = " & PedidoId  'Format(Fecha, 'dd/mm/yyyy') AS FechaFormateada,
      ' Establecer la base de datos actual
     Set db = CurrentDb
     ' Abrir el Recordset con la consulta
