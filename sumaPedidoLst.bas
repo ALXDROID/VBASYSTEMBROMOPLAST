@@ -201,7 +201,7 @@ Sub restastock()
 
     ' Recorrer cada producto de la tabla
     Do While Not rs.EOF
-        producto = rs!Nombre ' Nombre del producto actual
+        producto = rs!nombre ' Nombre del producto actual
         valorCambio = 0 ' Inicializar valor de cambio
 
         ' Recorrer cada fila del RowSource
