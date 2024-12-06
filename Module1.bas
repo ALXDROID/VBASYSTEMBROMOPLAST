@@ -96,7 +96,7 @@ Set conexion = CurrentProject.Connection
 'Dim sqlCuenta, precio As String
 Dim instruccion As String
 Dim txtArticulo As Control
-Dim cantidad As Long
+Dim Cantidad As Long
 Dim cantidadBD As Long
   'If boton.Name = nomBtn Then
 
@@ -154,7 +154,7 @@ If txtArticulo.Value = "" Or IsNull(txtArticulo.Value) Or txtArticulo.Value = 0 
 
 
 Form_frm_Pedidos.textoarticulo.SetFocus
-Form_frm_Pedidos.textoarticulo.Value = memo!nombre
+Form_frm_Pedidos.textoarticulo.Value = memo!Nombre
 
 memo.Close
 Set memo = Nothing
@@ -212,7 +212,7 @@ Sub EnviarDatosAMySQL()
     Dim sqlInsert As String
     Dim rs As ADODB.Recordset
     Dim maxID As Integer
-    Dim nombre As String
+    Dim Nombre As String
     Dim Descripcion As String
     Dim listIndex, i As Integer
     Dim totalCantidadListBox As Integer
@@ -251,13 +251,13 @@ Sub EnviarDatosAMySQL()
     ' Iterar a través de todos los elementos del ListBox (sin importar si están seleccionados)
     For listIndex = 0 To Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.ListCount - 1
         ' Extraer los datos del ListBox
-        nombre = Form_frm_Clientes.txtNombre.Value '& " " & Form_frm_ClientesPedido.txt_apellido_cliente.Value
+        Nombre = Form_frm_Clientes.txtNombre.Value '& " " & Form_frm_ClientesPedido.txt_apellido_cliente.Value
         Descripcion = Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.Column(1, listIndex)
         
         ' Insertar una fila por cada cantidad de la fila del ListBox
         For i = 1 To Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.Column(0, listIndex)
             maxID = maxID + 1 ' Incrementar el valor de IDAuto
-            sqlInsert = "INSERT INTO orden (IDAuto, cantidad, nomCliente, nomProd) VALUES (" & maxID & ", '" & cantidadActual & " de " & totalCantidadListBox & "', '" & nombre & "', '" & Descripcion & "');"
+            sqlInsert = "INSERT INTO orden (IDAuto, cantidad, nomCliente, nomProd) VALUES (" & maxID & ", '" & cantidadActual & " de " & totalCantidadListBox & "', '" & Nombre & "', '" & Descripcion & "');"
             coneccion.Execute sqlInsert
             cantidadActual = cantidadActual + 1
         Next i
@@ -319,7 +319,7 @@ Report_Pedido.Cliente.Value = Form_frm_Clientes!frm_Pedidos.Form.txt_IDCli
     Set bd = CurrentDb
     Set rs = bd.OpenRecordset(sql, dbOpenDynaset)
     Report_Pedido.txtDetalleDesc.Value = Form_frm_Clientes!frm_Pedidos.Form.txtDetalleDesc.Value
-    Report_Pedido.nombre.Value = rs!nombre
+    Report_Pedido.Nombre.Value = rs!Nombre
     Report_Pedido.Direccion.Value = rs!Direccion
     Report_Pedido.Telefono.Value = rs!Telefono
     Report_Pedido.e_mail.Value = rs!e_mail

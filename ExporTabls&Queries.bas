@@ -57,7 +57,7 @@ Next qd
     
     MsgBox "Exportación completada en " & rutaDestino, vbInformation
 End Sub
-Function LimpiarNombreArchivo(nombre As String) As String
+Function LimpiarNombreArchivo(Nombre As String) As String
     Dim caracteresProhibidos As String
     Dim i As Integer
     Dim caracter As String
@@ -68,10 +68,10 @@ Function LimpiarNombreArchivo(nombre As String) As String
     ' Reemplazar caracteres prohibidos por guión bajo
     For i = 1 To Len(caracteresProhibidos)
         caracter = Mid(caracteresProhibidos, i, 1)
-        nombre = Replace(nombre, caracter, "_")
+        Nombre = Replace(Nombre, caracter, "_")
     Next i
     
-    LimpiarNombreArchivo = nombre
+    LimpiarNombreArchivo = Nombre
 End Function
 
 

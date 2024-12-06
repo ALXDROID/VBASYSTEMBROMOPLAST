@@ -188,13 +188,13 @@ If Not rst.EOF Then
     
 End Sub
 
-Function existeCat(nombre As String) As Boolean
+Function existeCat(Nombre As String) As Boolean
 Dim b As DAO.Database
 Dim r As DAO.Recordset
 Dim sql As String
 Dim ex As Boolean
 If Not IsNull(Form_subFormCategoria) Then
-    sql = "SELECT nombreCategoria FROM Categoria WHERE nombreCategoria = '" & nombre & "'"
+    sql = "SELECT nombreCategoria FROM Categoria WHERE nombreCategoria = '" & Nombre & "'"
     Set b = CurrentDb
     Set r = b.OpenRecordset(sql, dbOpenDynaset)
     
