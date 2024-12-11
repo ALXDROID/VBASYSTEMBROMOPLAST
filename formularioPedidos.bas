@@ -42,7 +42,7 @@ Sub ultimoPedido()
             ' Colocar los valores en los TextBoxes del formulario
             Form_frm_ModuloClientes.txtIDPed.Value = rs!Cliente
             'Form_frm_ModuloClientes.txt_Fecha.Value = rs!Fecha
-            Form_frm_ModuloClientes.cmbFechaFact.Value = rs!Fecha
+            Form_frm_ModuloClientes.cmbFechaFact.Value = rs!fecha
             'Form_frm_ModuloClientes.cmbFechaFact.RowSource = rs!Fecha
 '            Form_frm_ModuloClientes.cmbFechaFact.Value = rs!FechaFormateada
            'Form_frm_ModuloClientes.cmbFechaFact.Column(1) = Form_frm_ModuloClientes.cmbFechaFact.Value
@@ -54,7 +54,7 @@ Sub ultimoPedido()
         MsgBox "No se encontró el cliente con el ID proporcionado.", vbExclamation
     End If
     'Form_frm_ModuloClientes.cmbFechaFact.Value = Form_frm_ModuloClientes.cmbFechaFact.ItemData(0)
-    Form_frm_ModuloClientes.cmbFechaFact.Value = Format(rs!Fecha, "dd/mm/yyyy hh:mm:ss")  'Form_frm_ModuloClientes.cmbFechaFact.Value 'Format(rs!Fecha, Now, "mm/dd/yyyy")
+    Form_frm_ModuloClientes.cmbFechaFact.Value = Format(rs!fecha, "dd/mm/yyyy hh:mm:ss")  'Form_frm_ModuloClientes.cmbFechaFact.Value 'Format(rs!Fecha, Now, "mm/dd/yyyy")
     ' Cerrar el Recordset
        rs.Close
     Set rs = Nothing
@@ -395,7 +395,7 @@ Sub llenarcmbCaja()
 
     ' Recorrer los registros y llenar el ComboBox
     Do While Not rsFechas.EOF
-        Form_frm_ControlCaja.cmbHistorial.AddItem rsFechas!Fecha
+        Form_frm_ControlCaja.cmbHistorial.AddItem rsFechas!fecha
         rsFechas.MoveNext
     Loop
     
@@ -407,5 +407,132 @@ Sub llenarcmbCaja()
     rsFechas.Close
     Set rsFechas = Nothing
     Set db = Nothing
+
+End Sub
+Sub ActualizarSaldoCaja()
+    On Error GoTo ManejoErrores
+    
+    ' Declaración de variables
+    Dim db As DAO.Database
+    Dim rsMovimientos As DAO.Recordset
+    Dim rsSaldoCaja As DAO.Recordset
+    Dim saldoInicial As Currency
+    Dim nuevoSaldo As Currency
+    Dim comentario As String
+    Dim fecha As Date
+    ' Abrir base de datos y conjuntos de registros
+    Set db = CurrentDb()
+    Set rsMovimientos = db.OpenRecordset("SELECT * FROM MovimientosCaja ORDER BY fechaMov, IDMov", dbOpenDynaset)
+    Set rsSaldoCaja = db.OpenRecordset("SELECT * FROM SaldoCaja", dbOpenDynaset)
+    
+    ' Obtener el último saldo inicial de SaldoCaja
+    rsSaldoCaja.MoveLast
+    saldoInicial = rsSaldoCaja!saldoInicial
+    
+    ' Recorrer registros de Movimientos
+    Do While Not rsMovimientos.EOF
+        ' Calcular el nuevo saldo
+        If rsMovimientos!tipoMov = "ingreso" Then
+            nuevoSaldo = saldoInicial + rsMovimientos!monto
+            comentario = "Ingreso: " & rsMovimientos!monto
+        ElseIf rsMovimientos!tipoMov = "egreso" Then
+            nuevoSaldo = saldoInicial - rsMovimientos!monto
+            comentario = "Egreso: " & rsMovimientos!monto
+        Else
+            nuevoSaldo = saldoInicial ' Sin cambios si el tipoMov no es válido
+            comentario = "Movimiento sin tipo válido"
+        End If
+        fecha = rsMovimientos!fechaMov
+        ' Insertar el nuevo registro en SaldoCaja
+        rsSaldoCaja.AddNew
+        rsSaldoCaja!fecha = fecha
+        rsSaldoCaja!saldoInicial = nuevoSaldo
+        rsSaldoCaja!idMovimiento = rsMovimientos!IdMov
+        rsSaldoCaja!coment = comentario
+        rsSaldoCaja!activo = True
+        rsSaldoCaja.Update
+        
+        ' Actualizar el saldo inicial para el próximo movimiento
+        saldoInicial = nuevoSaldo
+        
+        ' Avanzar al siguiente registro
+        rsMovimientos.MoveNext
+    Loop
+    
+    ' Cerrar conjuntos de registros y base de datos
+    rsMovimientos.Close
+    rsSaldoCaja.Close
+    db.Close
+    
+    MsgBox "Actualización completada con éxito.", vbInformation, "Saldo Caja"
+    Exit Sub
+
+ManejoErrores:
+    MsgBox "Ocurrió un error: " & Err.Description, vbCritical, "Error"
+    On Error Resume Next
+    If Not rsMovimientos Is Nothing Then rsMovimientos.Close
+    If Not rsSaldoCaja Is Nothing Then rsSaldoCaja.Close
+    If Not db Is Nothing Then db.Close
+End Sub
+
+Sub IdMov()
+Dim dba As DAO.Database
+    Dim rsi As DAO.Recordset
+    Dim sqlF As String
+
+    ' Construir la consulta SQL para obtener las fechas desde el segundo registro
+    sqlF = "SELECT MovimientosCaja.IdMov, MovimientosCaja.fechaMov, MovimientosCaja.tipoMov, MovimientosCaja.descripcion, MovimientosCaja.monto, SaldoCaja.coment FROM MovimientosCaja INNER JOIN SaldoCaja ON MovimientosCaja.IDMov = SaldoCaja.idMovimiento WHERE MovimientosCaja.fechaMov = #" & Form_frm_ControlCaja.cmbHistorial.Value & "#;"
+
+    ' Establecer la base de datos actual
+    Set dba = CurrentDb
+
+    ' Abrir el Recordset con la consulta
+    Set rsi = dba.OpenRecordset(sqlF)
+
+    ' Recorrer los registros y llenar el ComboBox
+    If Not rsi.EOF Then
+    If Form_frm_ControlCaja.txtTipoSaldo.Visible = False And Form_frm_ControlCaja.lstSaldo.Visible = False Then
+        Form_frm_ControlCaja.lstSaldo.Visible = True
+        Form_frm_ControlCaja.txtTipoSaldo.Visible = True
+    End If
+        Form_frm_ControlCaja.txtIdMovimiento.Value = rsi!IdMov
+        Form_frm_ControlCaja.txtfechaReg.Value = rsi!fechaMov
+        Form_frm_ControlCaja.txtTipoSaldo.Value = rsi!tipoMov
+        Form_frm_ControlCaja.lstSaldo.RowSource = rsi!Descripcion
+         Form_frm_ControlCaja.txtTotalSaldo.Value = rsi!monto
+         Form_frm_ControlCaja.txtComent.Value = rsi!coment
+        'rs.MoveNext
+    End If
+    
+    If rsi.EOF Then
+    rsi.Close
+    Set rsi = Nothing
+    Set dba = Nothing
+    
+    
+    sqlF = "SELECT * FROM SaldoCaja WHERE Fecha = #" & Form_frm_ControlCaja.cmbHistorial.Value & "#;"
+
+    ' Establecer la base de datos actual
+    Set dba = CurrentDb
+
+    ' Abrir el Recordset con la consulta
+    Set rsi = dba.OpenRecordset(sqlF)
+
+    ' Recorrer los registros y llenar el ComboBox
+    If Not rsi.EOF Then
+        Form_frm_ControlCaja.txtIdMovimiento.Value = rsi!idMovimiento
+        Form_frm_ControlCaja.txtfechaReg.Value = rsi!fecha
+        Form_frm_ControlCaja.txtTipoSaldo.Visible = False
+        Form_frm_ControlCaja.lstSaldo.Visible = False
+         Form_frm_ControlCaja.txtTotalSaldo.Value = rsi!saldoInicial
+         Form_frm_ControlCaja.txtComent.Value = rsi!coment
+        'rs.MoveNext
+    End If
+    
+    End If
+    rsi.Close
+    Set rsi = Nothing
+    Set dba = Nothing
+
 
 End Sub
