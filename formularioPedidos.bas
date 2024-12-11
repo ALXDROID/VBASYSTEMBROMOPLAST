@@ -245,3 +245,167 @@ If Not recSet.EOF Then
     Set baseDat = Nothing
 
 End Sub
+
+
+Sub saldoCaj()
+
+Dim data As DAO.Database
+Dim rt As DAO.Recordset
+Dim str As String
+Dim Caja As Long
+Dim SaldoOcupado As Long
+    
+'    ProveID = Form_frm_Productos.cmbProvee.Value
+
+    ' Construir la consulta SQL
+If DCount("*", "SaldoCaja") = 0 Then
+Caja = 0
+Form_frm_ControlCaja.txtSaldoActual.Value = Caja
+
+ 'Caja = 0
+ GoTo Salto
+End If
+Call actualizaIdPrimerCaja
+str = "SELECT SaldoCaja.saldoInicial FROM SaldoCaja WHERE " & Form_frm_ControlCaja.txtIdMovimiento.Value & ";"
+    
+    ' Establecer la base de datos actual
+    Set data = CurrentDb
+    
+    ' Abrir el Recordset con la consulta
+    Set rt = data.OpenRecordset(str)
+    'If Form_frm_Productos.txtNomProd = "" Then
+    If Not rt.EOF Then
+        
+        Caja = rt!saldoInicial
+       Form_frm_ControlCaja.txtSaldoActual.Value = Caja
+    End If
+
+rt.Close
+Set rt = Nothing
+Set data = Nothing
+Form_frm_ControlCaja.txtIdMovimiento.Value = 0
+    ' Construir la consulta SQL
+If DCount("*", "MovimientosCaja") = 0 Then
+
+   Caja = 0
+   Exit Sub
+   
+End If
+str = "SELECT Sum(MovimientosCaja.monto)AS tot FROM MovimientosCaja WHERE MovimientosCaja.tipoMov = 'egreso' ;"
+    
+    ' Establecer la base de datos actual
+    Set data = CurrentDb
+    
+    ' Abrir el Recordset con la consulta
+    Set rt = data.OpenRecordset(str)
+    'If Form_frm_Productos.txtNomProd = "" Then
+    If Not rt.EOF Then
+        
+        SaldoOcupado = rt!tot
+      Form_frm_ControlCaja.txtOcupadoSaldo.Value = SaldoOcupado
+    End If
+
+rt.Close
+Set rt = Nothing
+Set data = Nothing
+Call llenarcmbCaja
+Exit Sub
+Salto:
+
+    ' Construir la consulta SQL
+If DCount("*", "MovimientosCaja") = 0 Then
+
+   SaldoOcupado = 0
+   Form_frm_ControlCaja.txtOcupadoSaldo.Value = SaldoOcupado
+   Exit Sub
+   
+End If
+
+str = "SELECT Sum(MovimientosCaja.monto)AS tot FROM MovimientosCaja WHERE MovimientosCaja.tipoMov = 'egreso' ;"
+    
+    ' Establecer la base de datos actual
+    Set data = CurrentDb
+    
+    ' Abrir el Recordset con la consulta
+    Set rt = data.OpenRecordset(str)
+    'If Form_frm_Productos.txtNomProd = "" Then
+    If Not rt.EOF Then
+        
+        SaldoOcupado = rt!tot
+       Form_frm_ControlCaja.txtOcupadoSaldo.Value = SaldoOcupado
+    End If
+
+rt.Close
+Set rt = Nothing
+Set data = Nothing
+'Call llenarcmbCaja
+End Sub
+
+Sub actualizaIdPrimerCaja()
+Dim dat As DAO.Database
+Dim recs As DAO.Recordset
+Dim strsq As String
+Dim C As Long
+
+    
+'    ProveID = Form_frm_Productos.cmbProvee.Value
+
+    ' Construir la consulta SQL
+If DCount("*", "SaldoCaja") = 0 Then
+'Caja = 0
+'Form_frm_ControlCaja.txtSaldoActual.Value = Caja
+Exit Sub
+End If
+
+strsq = "SELECT Min(SaldoCaja.ID_Saldo) AS minID FROM SaldoCaja ;"
+    
+    ' Establecer la base de datos actual
+    Set dat = CurrentDb
+    
+    ' Abrir el Recordset con la consulta
+    Set recs = dat.OpenRecordset(strsq)
+    'If Form_frm_Productos.txtNomProd = "" Then
+    If Not recs.EOF Then
+        
+        C = recs!minID
+       Form_frm_ControlCaja.txtIdMovimiento.Value = C
+    End If
+
+recs.Close
+Set recs = Nothing
+Set dat = Nothing
+End Sub
+Sub llenarcmbCaja()
+
+    Dim db As DAO.Database
+    Dim rsFechas As DAO.Recordset
+    Dim sqlFechas As String
+
+    ' Construir la consulta SQL para obtener las fechas desde el segundo registro
+    sqlFechas = "SELECT Fecha FROM SaldoCaja WHERE ID_Saldo > (SELECT Min(ID_Saldo) FROM SaldoCaja);"
+
+    ' Establecer la base de datos actual
+    Set db = CurrentDb
+
+    ' Abrir el Recordset con la consulta
+    Set rsFechas = db.OpenRecordset(sqlFechas)
+
+    ' Limpiar el ComboBox antes de llenarlo
+    Form_frm_ControlCaja.cmbHistorial.RowSource = ""
+
+    ' Recorrer los registros y llenar el ComboBox
+    Do While Not rsFechas.EOF
+        Form_frm_ControlCaja.cmbHistorial.AddItem rsFechas!Fecha
+        rsFechas.MoveNext
+    Loop
+    
+    ' Seleccionar el primer elemento como valor predeterminado
+    If Form_frm_ControlCaja.cmbHistorial.ListCount > 0 Then
+        Form_frm_ControlCaja.cmbHistorial = Form_frm_ControlCaja.cmbHistorial.ItemData(0)
+    End If
+
+    rsFechas.Close
+    Set rsFechas = Nothing
+    Set db = Nothing
+
+End Sub

@@ -402,3 +402,6 @@ Else
     Set bd = Nothing
     
 End Sub
+Function cerra()
+DoCmd.Close acForm, "frm_ControlCaja", acSaveNo
+End Function
