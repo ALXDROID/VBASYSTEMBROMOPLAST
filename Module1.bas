@@ -334,7 +334,7 @@ Set bd = Nothing
     sql = "SELECT * FROM Pedido WHERE ID_Pedido = " & idPedido
     Set bd = CurrentDb
     Set rs = bd.OpenRecordset(sql, dbOpenDynaset)
-    Report_Pedido.fecha.Value = Format(rs!fecha, "dd/mm/yyyy")
+    Report_Pedido.Fecha.Value = Format(rs!Fecha, "dd/mm/yyyy")
      Report_Pedido.Factura.Value = rs!Factura
      Report_Pedido.txtdesc = rs!Descuentos
     Report_Pedido.Lista.RowSource = Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.RowSource 'rs!Descripcion

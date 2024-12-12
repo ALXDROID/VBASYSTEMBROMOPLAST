@@ -42,7 +42,7 @@ Sub ultimoPedido()
             ' Colocar los valores en los TextBoxes del formulario
             Form_frm_ModuloClientes.txtIDPed.Value = rs!Cliente
             'Form_frm_ModuloClientes.txt_Fecha.Value = rs!Fecha
-            Form_frm_ModuloClientes.cmbFechaFact.Value = rs!fecha
+            Form_frm_ModuloClientes.cmbFechaFact.Value = rs!Fecha
             'Form_frm_ModuloClientes.cmbFechaFact.RowSource = rs!Fecha
 '            Form_frm_ModuloClientes.cmbFechaFact.Value = rs!FechaFormateada
            'Form_frm_ModuloClientes.cmbFechaFact.Column(1) = Form_frm_ModuloClientes.cmbFechaFact.Value
@@ -54,7 +54,7 @@ Sub ultimoPedido()
         MsgBox "No se encontró el cliente con el ID proporcionado.", vbExclamation
     End If
     'Form_frm_ModuloClientes.cmbFechaFact.Value = Form_frm_ModuloClientes.cmbFechaFact.ItemData(0)
-    Form_frm_ModuloClientes.cmbFechaFact.Value = Format(rs!fecha, "dd/mm/yyyy hh:mm:ss")  'Form_frm_ModuloClientes.cmbFechaFact.Value 'Format(rs!Fecha, Now, "mm/dd/yyyy")
+    Form_frm_ModuloClientes.cmbFechaFact.Value = Format(rs!Fecha, "dd/mm/yyyy hh:mm:ss")  'Form_frm_ModuloClientes.cmbFechaFact.Value 'Format(rs!Fecha, Now, "mm/dd/yyyy")
     ' Cerrar el Recordset
        rs.Close
     Set rs = Nothing
@@ -62,7 +62,7 @@ Sub ultimoPedido()
 
 Else
 
-    MsgBox "CLIENTE NO TIENE PEDIDOS", vbInformation, "BROMOPLAST SYSTEM"
+    MyMsgBox "CLIENTE NO TIENE PEDIDOS", "BROMOPLAST SYSTEM", "Aceptar", "", "", "#FFC0CB", "C:\Users\aphex\Documents\BROMOPLAST\Bromnoplast\bromoImages\Julito.gif"
      rs.Close
     Set rs = Nothing
     Set db = Nothing
@@ -189,24 +189,24 @@ If Not rst.EOF Then
 End Sub
 
 Function existeCat(Nombre As String) As Boolean
-Dim b As DAO.Database
-Dim r As DAO.Recordset
+Dim B As DAO.Database
+Dim R As DAO.Recordset
 Dim sql As String
 Dim ex As Boolean
 If Not IsNull(Form_subFormCategoria) Then
     sql = "SELECT nombreCategoria FROM Categoria WHERE nombreCategoria = '" & Nombre & "'"
-    Set b = CurrentDb
-    Set r = b.OpenRecordset(sql, dbOpenDynaset)
+    Set B = CurrentDb
+    Set R = B.OpenRecordset(sql, dbOpenDynaset)
     
-If Not r.EOF Then
+If Not R.EOF Then
      ex = True
     Else
      ex = False
      End If
     
-    r.Close
-    Set r = Nothing
-    Set b = Nothing
+    R.Close
+    Set R = Nothing
+    Set B = Nothing
  existeCat = ex
  Else
  End If
@@ -395,7 +395,7 @@ Sub llenarcmbCaja()
 
     ' Recorrer los registros y llenar el ComboBox
     Do While Not rsFechas.EOF
-        Form_frm_ControlCaja.cmbHistorial.AddItem rsFechas!fecha
+        Form_frm_ControlCaja.cmbHistorial.AddItem rsFechas!Fecha
         rsFechas.MoveNext
     Loop
     
@@ -419,7 +419,7 @@ Sub ActualizarSaldoCaja()
     Dim saldoInicial As Currency
     Dim nuevoSaldo As Currency
     Dim comentario As String
-    Dim fecha As Date
+    Dim Fecha As Date
     ' Abrir base de datos y conjuntos de registros
     Set db = CurrentDb()
     Set rsMovimientos = db.OpenRecordset("SELECT * FROM MovimientosCaja ORDER BY fechaMov, IDMov", dbOpenDynaset)
@@ -442,10 +442,10 @@ Sub ActualizarSaldoCaja()
             nuevoSaldo = saldoInicial ' Sin cambios si el tipoMov no es válido
             comentario = "Movimiento sin tipo válido"
         End If
-        fecha = rsMovimientos!fechaMov
+        Fecha = rsMovimientos!fechaMov
         ' Insertar el nuevo registro en SaldoCaja
         rsSaldoCaja.AddNew
-        rsSaldoCaja!fecha = fecha
+        rsSaldoCaja!Fecha = Fecha
         rsSaldoCaja!saldoInicial = nuevoSaldo
         rsSaldoCaja!idMovimiento = rsMovimientos!IdMov
         rsSaldoCaja!coment = comentario
@@ -491,9 +491,10 @@ Dim dba As DAO.Database
 
     ' Recorrer los registros y llenar el ComboBox
     If Not rsi.EOF Then
-    If Form_frm_ControlCaja.txtTipoSaldo.Visible = False And Form_frm_ControlCaja.lstSaldo.Visible = False Then
+    If Form_frm_ControlCaja.txtTipoSaldo.Visible = False And Form_frm_ControlCaja.lblTipoDet.Visible = False And Form_frm_ControlCaja.lstSaldo.Visible = False Then
         Form_frm_ControlCaja.lstSaldo.Visible = True
         Form_frm_ControlCaja.txtTipoSaldo.Visible = True
+        Form_frm_ControlCaja.lblTipoDet.Visible = True
     End If
         Form_frm_ControlCaja.txtIdMovimiento.Value = rsi!IdMov
         Form_frm_ControlCaja.txtfechaReg.Value = rsi!fechaMov
@@ -521,9 +522,10 @@ Dim dba As DAO.Database
     ' Recorrer los registros y llenar el ComboBox
     If Not rsi.EOF Then
         Form_frm_ControlCaja.txtIdMovimiento.Value = rsi!idMovimiento
-        Form_frm_ControlCaja.txtfechaReg.Value = rsi!fecha
+        Form_frm_ControlCaja.txtfechaReg.Value = rsi!Fecha
         Form_frm_ControlCaja.txtTipoSaldo.Visible = False
         Form_frm_ControlCaja.lstSaldo.Visible = False
+        Form_frm_ControlCaja.lblTipoDet.Visible = False
          Form_frm_ControlCaja.txtTotalSaldo.Value = rsi!saldoInicial
          Form_frm_ControlCaja.txtComent.Value = rsi!coment
         'rs.MoveNext
