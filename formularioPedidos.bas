@@ -61,8 +61,9 @@ Sub ultimoPedido()
     Set db = Nothing
 
 Else
-
-    MyMsgBox "CLIENTE NO TIENE PEDIDOS", "BROMOPLAST SYSTEM", "Aceptar", "", "", "#FFC0CB", "C:\Users\aphex\Documents\BROMOPLAST\Bromnoplast\bromoImages\Julito.gif"
+ 
+    MyMsgBox "CLIENTE NO TIENE PEDIDOS", "BROMOPLAST SYSTEM", "Aceptar", "", "", "#8EA3BD", "C:\Users\aphex\Documents\BROMOPLAST\Bromnoplast\bromoImages\Julito.gif"   ', "C:\Users\aphex\Documents\BROMOPLAST\Bromnoplast\bromoImages\Julito.gif"
+     
      rs.Close
     Set rs = Nothing
     Set db = Nothing
@@ -190,22 +191,22 @@ End Sub
 
 Function existeCat(Nombre As String) As Boolean
 Dim B As DAO.Database
-Dim R As DAO.Recordset
+Dim r As DAO.Recordset
 Dim sql As String
 Dim ex As Boolean
 If Not IsNull(Form_subFormCategoria) Then
     sql = "SELECT nombreCategoria FROM Categoria WHERE nombreCategoria = '" & Nombre & "'"
     Set B = CurrentDb
-    Set R = B.OpenRecordset(sql, dbOpenDynaset)
+    Set r = B.OpenRecordset(sql, dbOpenDynaset)
     
-If Not R.EOF Then
+If Not r.EOF Then
      ex = True
     Else
      ex = False
      End If
     
-    R.Close
-    Set R = Nothing
+    r.Close
+    Set r = Nothing
     Set B = Nothing
  existeCat = ex
  Else
