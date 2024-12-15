@@ -62,7 +62,7 @@ Sub ultimoPedido()
 
 Else
  
-    MyMsgBox "CLIENTE NO TIENE PEDIDOS", "BROMOPLAST SYSTEM", "Aceptar", "", "", "#8EA3BD", "C:\Users\aphex\Documents\BROMOPLAST\Bromnoplast\bromoImages\Julito.gif"   ', "C:\Users\aphex\Documents\BROMOPLAST\Bromnoplast\bromoImages\Julito.gif"
+    MyMsgBox "CLIENTE NO TIENE PEDIDOS", "BROMOPLAST SYSTEM", "Aceptar", "", "", "#8EA3BD", "C:\Users\aphex\Documents\BROMOPLAST\Bromnoplast\bromoImages\Julito.gif"  ', "C:\Users\aphex\Documents\BROMOPLAST\Bromnoplast\bromoImages\Julito.gif"
      
      rs.Close
     Set rs = Nothing
@@ -305,7 +305,7 @@ str = "SELECT Sum(MovimientosCaja.monto)AS tot FROM MovimientosCaja WHERE Movimi
         SaldoOcupado = rt!tot
       Form_frm_ControlCaja.txtOcupadoSaldo.Value = SaldoOcupado
     End If
-
+Form_frm_ControlCaja.txtSaldoActual = Form_frm_ControlCaja.txtSaldoActual - Form_frm_ControlCaja.txtOcupadoSaldo
 rt.Close
 Set rt = Nothing
 Set data = Nothing
@@ -319,7 +319,7 @@ If DCount("*", "MovimientosCaja") = 0 Then
    SaldoOcupado = 0
    Form_frm_ControlCaja.txtOcupadoSaldo.Value = SaldoOcupado
    Exit Sub
-   
+   Form_frm_ControlCaja.txtSaldoActual = Form_frm_ControlCaja.txtSaldoActual - Form_frm_ControlCaja.txtOcupadoSaldo
 End If
 
 str = "SELECT Sum(MovimientosCaja.monto)AS tot FROM MovimientosCaja WHERE MovimientosCaja.tipoMov = 'egreso' ;"
@@ -335,7 +335,7 @@ str = "SELECT Sum(MovimientosCaja.monto)AS tot FROM MovimientosCaja WHERE Movimi
         SaldoOcupado = rt!tot
        Form_frm_ControlCaja.txtOcupadoSaldo.Value = SaldoOcupado
     End If
-
+Form_frm_ControlCaja.txtSaldoActual = Form_frm_ControlCaja.txtSaldoActual - Form_frm_ControlCaja.txtOcupadoSaldo
 rt.Close
 Set rt = Nothing
 Set data = Nothing
@@ -527,11 +527,11 @@ Dim dba As DAO.Database
         Form_frm_ControlCaja.txtTipoSaldo.Visible = False
         Form_frm_ControlCaja.lstSaldo.Visible = False
         Form_frm_ControlCaja.lblTipoDet.Visible = False
-         Form_frm_ControlCaja.txtTotalSaldo.Value = rsi!saldoInicial
+         Form_frm_ControlCaja.txtTotalSaldo.Value = rsi!saldoInicial '- Form_frm_ControlCaja.txtOcupadoSaldo.Value
          Form_frm_ControlCaja.txtComent.Value = rsi!coment
         'rs.MoveNext
     End If
-    
+    'Form_frm_ControlCaja.txtSaldoActual = Form_frm_ControlCaja.txtSaldoActual - Form_frm_ControlCaja.txtOcupadoSaldo
     End If
     rsi.Close
     Set rsi = Nothing

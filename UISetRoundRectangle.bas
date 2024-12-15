@@ -53,7 +53,7 @@ Public Function UISetRoundRect( _
         
         ' Elimina los bordes de la ventana y la barra de título
 '        SetWindowLong hWnd, GWL_STYLE, currentStyle And Not (WS_BORDER Or WS_DLGFRAME Or WS_CAPTION)
-SetWindowLong hWnd, GWL_STYLE, currentStyle And Not (WS_DLGFRAME)
+SetWindowLong hWnd, GWL_STYLE, currentStyle   'And Not (WS_BORDER Or WS_DLGFRAME Or WS_CAPTION)
 
         ' Crea el borde redondeado
         hRgn = CreateRoundRectRgn(0, 0, intRight, intHeight, CornersInPixels, CornersInPixels)

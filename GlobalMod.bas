@@ -46,7 +46,7 @@ End Function
 Public Function MyMsgBox(Prompt As String, Optional Title As String, _
         Optional Button1 As String = "OK", Optional Button2 As String = "Cancel", _
         Optional Button3 As String, Optional FormBackColor As String = "#8EA3BD", Optional Picture As String = "C:\Users\aphex\Documents\BROMOPLAST\Bromnoplast\icoAccess\log.jpg") As String
-'#8EA3BD"
+
     Dim Args As String
 
     If Button1 = "" Then Button1 = "OK"
@@ -58,11 +58,13 @@ Public Function MyMsgBox(Prompt As String, Optional Title As String, _
       If Button3 <> "" Then Args = Args & "Button3=" & Button3 & ";"
      Args = Args & "FormBackColor=" & FormBackColor & ";"
      Args = Args & "Picture=" & Picture & ";"                'BorderStyle
-      'Args = Args & "BorderStyle=" & BorderStyle & ";"
+    
+      
     MsgBox Args
 
     DoCmd.OpenForm "MyMsgBox", WindowMode:=acDialog, OpenArgs:=Args  ', WindowMode:=acDialog
-
+     
     MyMsgBox = TempVars("MyMsgBox")
-
+    
+    
 End Function
