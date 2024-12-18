@@ -213,16 +213,19 @@ Sub restastock()
             If UBound(columnas) >= 1 And columnas(1) = producto Then
                 ' Sumar o restar el valor de la columna 2 (índice 1)
                 valorCambio = valorCambio + CLng(columnas(0))
+           
             End If
+           
         Next i
 On Error Resume Next
-        ' Actualizar el valor en la tabla Productos
-        If valorCambio >= 0 And columnas(1) = producto And valorCambio <> Null Then
+         'Actualizar el valor en la tabla ProductosvalorCambio >= 0 AndAnd valorCambio <> Null
+        If columnas(1) = producto Then
             sql = "UPDATE Productos SET stockActual = (stockActual - " & valorCambio & ") WHERE nombre = '" & producto & "';"
             DoCmd.RunSQL sql
+          
         End If
 
-        ' Mover al siguiente registro
+         'Mover al siguiente registro
         rs.MoveNext
     Loop
 If Err.Number = 9 Then
