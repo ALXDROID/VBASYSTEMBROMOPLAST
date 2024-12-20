@@ -267,7 +267,9 @@ Form_frm_ControlCaja.txtSaldoActual.Value = Caja
  GoTo Salto
 End If
 Call actualizaIdPrimerCaja
-str = "SELECT SaldoCaja.saldoInicial FROM SaldoCaja WHERE " & Form_frm_ControlCaja.txtIdMovimiento.Value & ";"
+Dim idC As Long
+idC = TempVars!Caja.Value
+str = "SELECT SaldoCaja.saldoInicial FROM SaldoCaja WHERE " & idC & ";"
     
     ' Establecer la base de datos actual
     Set data = CurrentDb
@@ -339,10 +341,10 @@ Form_frm_ControlCaja.txtSaldoActual = Form_frm_ControlCaja.txtSaldoActual - Form
 rt.Close
 Set rt = Nothing
 Set data = Nothing
-'Call llenarcmbCaja
+Call llenarcmbCaja
 End Sub
 
-Sub actualizaIdPrimerCaja()
+Public Sub actualizaIdPrimerCaja()
 Dim dat As DAO.Database
 Dim recs As DAO.Recordset
 Dim strsq As String
@@ -369,7 +371,8 @@ strsq = "SELECT Min(SaldoCaja.ID_Saldo) AS minID FROM SaldoCaja ;"
     If Not recs.EOF Then
         
         C = recs!minID
-       Form_frm_ControlCaja.txtIdMovimiento.Value = C
+        TempVars.Add "Caja", C
+       'Form_frm_ControlCaja.txtIdMovimiento.Value = C
     End If
 
 recs.Close
@@ -418,32 +421,43 @@ Sub ActualizarSaldoCaja()
     Dim rsMovimientos As DAO.Recordset
     Dim rsSaldoCaja As DAO.Recordset
     Dim saldoInicial As Currency
+     Dim saldoOne As Currency
     Dim nuevoSaldo As Currency
     Dim comentario As String
     Dim Fecha As Date
+    Dim idMovi As Long
     ' Abrir base de datos y conjuntos de registros
     Set db = CurrentDb()
     Set rsMovimientos = db.OpenRecordset("SELECT * FROM MovimientosCaja ORDER BY fechaMov, IDMov", dbOpenDynaset)
     Set rsSaldoCaja = db.OpenRecordset("SELECT * FROM SaldoCaja", dbOpenDynaset)
     
     ' Obtener el último saldo inicial de SaldoCaja
-    rsSaldoCaja.MoveLast
-    saldoInicial = rsSaldoCaja!saldoInicial
+    rsSaldoCaja.MoveFirst
+   saldoOne = rsSaldoCaja!saldoInicial
+    rsMovimientos.MoveLast
+    idMovi = rsMovimientos!IdMov
     
+    
+    DoCmd.SetWarnings False
     ' Recorrer registros de Movimientos
     Do While Not rsMovimientos.EOF
         ' Calcular el nuevo saldo
-        If rsMovimientos!tipoMov = "ingreso" Then
-            nuevoSaldo = saldoInicial + rsMovimientos!monto
-            comentario = "Ingreso: " & rsMovimientos!monto
-        ElseIf rsMovimientos!tipoMov = "egreso" Then
-            nuevoSaldo = saldoInicial - rsMovimientos!monto
-            comentario = "Egreso: " & rsMovimientos!monto
-        Else
-            nuevoSaldo = saldoInicial ' Sin cambios si el tipoMov no es válido
-            comentario = "Movimiento sin tipo válido"
+        If rsMovimientos!tipoMov = "ingreso" And rsMovimientos!IdMov = idMovi Then
+            Fecha = rsMovimientos!fechaMov
+            nuevoSaldo = rsMovimientos!monto
+            comentario = rsMovimientos!Descripcion
+            
+            DoCmd.RunSQL ("UPDATE SaldoCaja SET saldoInicial = saldoInicial + " & CCur(nuevoSaldo) & " WHERE saldoInicial = " & saldoOne & " ;")
+        ElseIf rsMovimientos!tipoMov = "egreso" And rsMovimientos!IdMov = idMovi Then
+            Fecha = rsMovimientos!fechaMov
+            nuevoSaldo = rsMovimientos!monto
+            comentario = rsMovimientos!Descripcion
+            DoCmd.RunSQL ("UPDATE SaldoCaja SET saldoInicial = saldoInicial - " & CCur(nuevoSaldo) & " WHERE saldoInicial = " & saldoOne & " ;")
+'        Else
+'            nuevoSaldo = saldoInicial ' Sin cambios si el tipoMov no es válido
+'            comentario = "Movimiento sin tipo válido"
         End If
-        Fecha = rsMovimientos!fechaMov
+        
         ' Insertar el nuevo registro en SaldoCaja
         rsSaldoCaja.AddNew
         rsSaldoCaja!Fecha = Fecha
@@ -454,12 +468,12 @@ Sub ActualizarSaldoCaja()
         rsSaldoCaja.Update
         
         ' Actualizar el saldo inicial para el próximo movimiento
-        saldoInicial = nuevoSaldo
+        'saldoInicial = nuevoSaldo
         
         ' Avanzar al siguiente registro
         rsMovimientos.MoveNext
     Loop
-    
+    DoCmd.SetWarnings True
     ' Cerrar conjuntos de registros y base de datos
     rsMovimientos.Close
     rsSaldoCaja.Close

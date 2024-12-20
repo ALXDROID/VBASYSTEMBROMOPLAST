@@ -177,71 +177,384 @@ Form_frm_ModuloClientes.txt_Total = sum - Form_frm_ModuloClientes.txtdesc
 'End If
 End Sub
 
-Sub restastock()
 
+Sub restastock()
     Dim db As DAO.Database
     Dim rs As DAO.Recordset
-    Dim datos As String
-    Dim filas() As String
-    Dim columnas() As String
+    Dim Lista As Access.ListBox
     Dim i As Integer
     Dim producto As String
     Dim valorCambio As Long
-    Dim sql As String
 
-    ' Obtener el contenido del campo Long Text (RowSource)
-    datos = Forms!frm_Clientes!frm_Pedidos.Form.ListaPedido.RowSource ' Reemplaza con el control o fuente de texto
+    On Error GoTo ManejoErrores
 
-    ' Dividir las filas (asume salto de línea como delimitador)
-    filas = Split(datos, vbCrLf)
+    ' Obtener el ListBox
+    Set Lista = Forms!frm_Clientes!frm_Pedidos.Form.ListaPedido
 
     ' Abrir la tabla Productos
     Set db = CurrentDb
-    Set rs = db.OpenRecordset("SELECT nombre, stockActual FROM Productos")
+    Set rs = db.OpenRecordset("SELECT nombre, stockActual FROM Productos", dbOpenDynaset)
 
-    ' Recorrer cada producto de la tabla
-    Do While Not rs.EOF
-        producto = rs!Nombre ' Nombre del producto actual
-        valorCambio = 0 ' Inicializar valor de cambio
+    ' Recorrer cada fila del ListBox
+    For i = 0 To Lista.ListCount - 1
+        ' Extraer datos directamente de las columnas del ListBox
+        valorCambio = CLng(Lista.Column(0, i)) ' Primera columna: valor de cambio
+        producto = Trim(Lista.Column(1, i))    ' Segunda columna: nombre del producto
 
-        ' Recorrer cada fila del RowSource
-        For i = LBound(filas) To UBound(filas)
-            ' Dividir columnas de la fila (delimitador ';')
-            columnas = Split(filas(i), ";")
+        ' Buscar el producto en el Recordset
+        rs.FindFirst "nombre = '" & producto & "'"
 
-            ' Verificar si el producto coincide con la primera columna
-            If UBound(columnas) >= 1 And columnas(1) = producto Then
-                ' Sumar o restar el valor de la columna 2 (índice 1)
-                valorCambio = valorCambio + CLng(columnas(0))
-           
-            End If
-           
-        Next i
-On Error Resume Next
-         'Actualizar el valor en la tabla ProductosvalorCambio >= 0 AndAnd valorCambio <> Null
-        If columnas(1) = producto Then
-            sql = "UPDATE Productos SET stockActual = (stockActual - " & valorCambio & ") WHERE nombre = '" & producto & "';"
-            DoCmd.RunSQL sql
-          
+        ' Si se encuentra, actualizar el stock
+        If Not rs.NoMatch Then
+            rs.Edit
+            rs!stockActual = rs!stockActual - valorCambio
+            rs.Update
+        Else
+            Debug.Print "Producto no encontrado: " & producto
         End If
-
-         'Mover al siguiente registro
-        rs.MoveNext
-    Loop
-If Err.Number = 9 Then
-    'MsgBox "El formulario o control no existe. Revisa los nombres."
-    Err.Clear ' Limpiar el error
-    Exit Sub
-End If
-
-On Error GoTo 0 ' Restaurar el manejo normal de errores
-    ' Cerrar el Recordset
-    rs.Close
-    Set rs = Nothing
-    Set db = Nothing
+    Next i
 
     MsgBox "Stock actualizado correctamente.", vbInformation
 
+Fin:
+    ' Cerrar el Recordset y liberar recursos
+    If Not rs Is Nothing Then rs.Close
+    Set rs = Nothing
+    Set db = Nothing
+    Exit Sub
 
-    
+ManejoErrores:
+    MsgBox "Ocurrió un error: " & Err.Description, vbCritical
+    Resume Fin
 End Sub
+
+'Sub restastock()
+'    Dim db As DAO.Database
+'    Dim rs As DAO.Recordset
+'    Dim lista As Access.ListBox
+'    Dim item As Variant
+'    Dim columnas() As String
+'    Dim producto As String
+'    Dim valorCambio As Long
+'
+'    On Error GoTo ManejoErrores
+'
+'    ' Obtener el ListBox
+'    Set lista = Forms!frm_Clientes!frm_Pedidos.Form.ListaPedido
+'
+'    ' Abrir la tabla Productos
+'    Set db = CurrentDb
+'    Set rs = db.OpenRecordset("SELECT nombre, stockActual FROM Productos", dbOpenDynaset)
+'
+'    ' Recorrer cada elemento del ListBox
+'    For Each item In lista.ItemsSelected
+'        ' Dividir las columnas del elemento seleccionado
+'        columnas = Split(lista.Column(0, item), ";")
+'
+'        ' Validar que hay suficientes columnas
+'        If UBound(columnas) >= 1 Then
+'            ' Extraer el nombre del producto y el cambio de stock
+'            producto = Trim(columnas(1)) ' Segunda columna: nombre del producto
+'            valorCambio = CLng(columnas(0)) ' Primera columna: valor de cambio
+'
+'            ' Buscar el producto en el Recordset
+'            rs.FindFirst "nombre = '" & producto & "'"
+'
+'            ' Si se encuentra, actualizar el stock
+'            If Not rs.NoMatch Then
+'                rs.Edit
+'                rs!stockActual = rs!stockActual - valorCambio
+'                rs.Update
+'            End If
+'        Else
+'            Debug.Print "Elemento mal formado en ListBox."
+'        End If
+'    Next item
+'
+'    MsgBox "Stock actualizado correctamente.", vbInformation
+'
+'Fin:
+'    ' Cerrar el Recordset y liberar recursos
+'    If Not rs Is Nothing Then rs.Close
+'    Set rs = Nothing
+'    Set db = Nothing
+'    Exit Sub
+'
+'ManejoErrores:
+'    MsgBox "Ocurrió un error: " & Err.Description, vbCritical
+'    Resume Fin
+'End Sub
+
+'Sub restastock()
+'
+'    Dim db As DAO.Database
+'    Dim rs As DAO.Recordset
+'    Dim datos As String
+'    Dim filas() As String
+'    Dim columnas() As String
+'    Dim i As Integer
+'    Dim producto As String
+'    Dim valorCambio As Long
+'    Dim productosProcesados As Collection
+'    Dim productoExistente As Boolean
+'
+'    On Error GoTo ManejoErrores
+'
+'    ' Inicializar la colección para registrar productos procesados
+'    Set productosProcesados = New Collection
+'
+'    ' Obtener el contenido del RowSource
+'    datos = Forms!frm_Clientes!frm_Pedidos.Form.ListaPedido.RowSource
+'
+'    ' Dividir las filas (usa vbCrLf como delimitador)
+'    filas = Split(datos, vbCrLf)
+'
+'    ' Abrir la tabla Productos
+'    Set db = CurrentDb
+'    Set rs = db.OpenRecordset("SELECT nombre, stockActual FROM Productos", dbOpenDynaset)
+'
+'    ' Recorrer cada fila del RowSource
+'    For i = LBound(filas) To UBound(filas)
+'        ' Dividir columnas de cada fila (usa ';' como delimitador)
+'        columnas = Split(filas(i), ";")
+'
+'        ' Asegurarse de que hay suficientes columnas en la fila
+'        If UBound(columnas) >= 1 Then
+'            ' Extraer el nombre del producto y el cambio de stock
+'            producto = Trim(columnas(1)) ' Segunda columna: nombre del producto
+'            valorCambio = CLng(columnas(0)) ' Primera columna: valor de cambio
+'
+'            ' Verificar si el producto ya fue procesado
+'            On Error Resume Next
+'            productoExistente = False
+'            productosProcesados.Add producto, CStr(producto)
+'            If Err.Number = 457 Then
+'                ' Si el producto ya fue procesado, lo marcamos como existente
+'                productoExistente = True
+'                Err.Clear
+'            End If
+'            On Error GoTo ManejoErrores
+'
+'            ' Si no se procesó antes o acumulamos cambios adicionales
+'            If Not productoExistente Then
+'                ' Buscar el producto en el Recordset
+'                rs.FindFirst "nombre = '" & producto & "'"
+'
+'                ' Si se encuentra, actualizar el stock
+'                If Not rs.NoMatch Then
+'                    rs.Edit
+'                    rs!stockActual = rs!stockActual - valorCambio
+'                    rs.Update
+'                End If
+'            End If
+'        Else
+'            ' En caso de columnas mal formateadas, registrar un error o continuar
+'            Debug.Print "Fila mal formada: " & filas(i)
+'        End If
+'    Next i
+'
+'    MsgBox "Stock actualizado correctamente.", vbInformation
+'
+'Fin:
+'    ' Cerrar el Recordset y liberar recursos
+'    If Not rs Is Nothing Then rs.Close
+'    Set rs = Nothing
+'    Set db = Nothing
+'    Exit Sub
+'
+'ManejoErrores:
+'    MsgBox "Ocurrió un error: " & Err.Description, vbCritical
+'    Resume Fin
+'End Sub
+
+
+'    Dim db As DAO.Database
+'    Dim rs As DAO.Recordset
+'    Dim datos As String
+'    Dim filas() As String
+'    Dim columnas() As String
+'    Dim i As Integer
+'    Dim producto As String
+'    Dim valorCambio As Long
+'
+'    On Error GoTo ManejoErrores
+'
+'    ' Obtener el contenido del RowSource
+'    datos = Forms!frm_Clientes!frm_Pedidos.Form.ListaPedido.RowSource
+'
+'    ' Dividir las filas (usa vbCrLf como delimitador)
+'    filas = Split(datos, vbCrLf)
+'
+'    ' Abrir la tabla Productos
+'    Set db = CurrentDb
+'    Set rs = db.OpenRecordset("SELECT nombre, stockActual FROM Productos", dbOpenDynaset)
+'
+'    ' Recorrer cada fila del RowSource
+'    For i = LBound(filas) To UBound(filas)
+'        ' Dividir columnas de cada fila (usa ';' como delimitador)
+'        columnas = Split(filas(i), ";")
+'
+'        ' Asegurarse de que hay suficientes columnas en la fila
+'        If UBound(columnas) >= 1 Then
+'            ' Extraer el nombre del producto y el cambio de stock
+'            producto = Trim(columnas(1)) ' Segunda columna: nombre del producto
+'            valorCambio = CLng(columnas(0)) ' Primera columna: valor de cambio
+'
+'            ' Buscar el producto en el Recordset
+'            rs.FindFirst "nombre = '" & producto & "'"
+'
+'            ' Si se encuentra, actualizar el stock
+'            If Not rs.NoMatch Then
+'                rs.Edit
+'                rs!stockActual = rs!stockActual - valorCambio
+'                rs.Update
+'            End If
+'        End If
+'    Next i
+'
+'    MsgBox "Stock actualizado correctamente.", vbInformation
+'
+'Fin:
+'    ' Cerrar el Recordset y liberar recursos
+'    If Not rs Is Nothing Then rs.Close
+'    Set rs = Nothing
+'    Set db = Nothing
+'    Exit Sub
+'
+'ManejoErrores:
+'    MsgBox "Ocurrió un error: " & Err.Description, vbCritical
+'    Resume Fin
+'End Sub
+
+'Sub restastock()
+'
+'Dim db As DAO.Database
+'    Dim rs As DAO.Recordset
+'    Dim datos As String
+'    Dim filas() As String
+'    Dim columnas() As String
+'    Dim i As Integer
+'    Dim producto As String
+'    Dim valorCambio As Long
+'
+'    On Error GoTo ManejoErrores
+'
+'    ' Obtener el contenido del campo Long Text (RowSource)
+'    datos = Forms!frm_Clientes!frm_Pedidos.Form.ListaPedido.RowSource ' Reemplaza con el control o fuente de texto
+'
+'    ' Dividir las filas (asume salto de línea como delimitador)
+'    filas = Split(datos, vbCrLf)
+'
+'    ' Abrir la tabla Productos
+'    Set db = CurrentDb
+'    Set rs = db.OpenRecordset("SELECT nombre, stockActual FROM Productos", dbOpenDynaset)
+'
+'    ' Recorrer cada producto de la tabla
+'    Do While Not rs.EOF
+'        producto = rs!Nombre ' Nombre del producto actual
+'        valorCambio = 0 ' Inicializar valor de cambio
+'
+'        ' Recorrer cada fila del RowSource
+'        For i = LBound(filas) To UBound(filas)
+'            ' Dividir columnas de la fila (delimitador ';')
+'            columnas = Split(filas(i), ";")
+'
+'            ' Verificar si el producto coincide con la primera columna
+'            If UBound(columnas) >= 1 Then
+'                If Trim(columnas(1)) = Trim(producto) Then
+'                    ' Acumular el valor del cambio (columna índice 0)
+'                    valorCambio = valorCambio + CLng(columnas(0))
+'                End If
+'            End If
+'        Next i
+'
+'        ' Actualizar el stock del producto en el Recordset si hubo cambios
+'        If valorCambio <> 0 Then
+'            rs.Edit
+'            rs!stockActual = rs!stockActual - valorCambio
+'            rs.Update
+'        End If
+'
+'        ' Mover al siguiente registro
+'        rs.MoveNext
+'    Loop
+'
+'    MsgBox "Stock actualizado correctamente.", vbInformation
+'
+'Fin:
+'    ' Cerrar el Recordset y liberar recursos
+'    If Not rs Is Nothing Then rs.Close
+'    Set rs = Nothing
+'    Set db = Nothing
+'    Exit Sub
+'
+'ManejoErrores:
+'    MsgBox "Ocurrió un error: " & Err.Description, vbCritical
+'    Resume Fin
+'
+''    Dim db As DAO.Database
+''    Dim rs As DAO.Recordset
+''    Dim datos As String
+''    Dim filas() As String
+''    Dim columnas() As String
+''    Dim i As Integer
+''    Dim producto As String
+''    Dim valorCambio As Long
+''    Dim sql As String
+''
+''    ' Obtener el contenido del campo Long Text (RowSource)
+''    datos = Forms!frm_Clientes!frm_Pedidos.Form.ListaPedido.RowSource ' Reemplaza con el control o fuente de texto
+''
+''    ' Dividir las filas (asume salto de línea como delimitador)
+''    filas = Split(datos, vbCrLf)
+''
+''    ' Abrir la tabla Productos
+''    Set db = CurrentDb
+''    Set rs = db.OpenRecordset("SELECT nombre, stockActual FROM Productos")
+''
+''    ' Recorrer cada producto de la tabla
+''    Do While Not rs.EOF
+''        producto = rs!Nombre ' Nombre del producto actual
+''        valorCambio = 0 ' Inicializar valor de cambio
+''
+''        ' Recorrer cada fila del RowSource
+''        For i = LBound(filas) To UBound(filas)
+''            ' Dividir columnas de la fila (delimitador ';')
+''            columnas = Split(filas(i), ";")
+''
+''            ' Verificar si el producto coincide con la primera columna
+''            If UBound(columnas) >= 1 And columnas(1) = producto Then
+''                ' Sumar o restar el valor de la columna 2 (índice 1)
+''                valorCambio = valorCambio + CLng(columnas(0))
+''
+''            End If
+''
+''        Next i
+''On Error Resume Next
+''         'Actualizar el valor en la tabla ProductosvalorCambio >= 0 AndAnd valorCambio <> Null
+''        If columnas(1) = producto Then
+''            sql = "UPDATE Productos SET stockActual = (stockActual - " & valorCambio & ") WHERE nombre = '" & producto & "';"
+''            DoCmd.RunSQL sql
+''
+''        End If
+''
+''         'Mover al siguiente registro
+''        rs.MoveNext
+''    Loop
+''If Err.Number = 9 Then
+''    'MsgBox "El formulario o control no existe. Revisa los nombres."
+''    Err.Clear ' Limpiar el error
+''    Exit Sub
+''End If
+''
+''On Error GoTo 0 ' Restaurar el manejo normal de errores
+''    ' Cerrar el Recordset
+''    rs.Close
+''    Set rs = Nothing
+''    Set db = Nothing
+''
+''    MsgBox "Stock actualizado correctamente.", vbInformation
+''
+'
+'
+'End Sub
