@@ -370,7 +370,7 @@ strsq = "SELECT Min(SaldoCaja.ID_Saldo) AS minID FROM SaldoCaja ;"
     'If Form_frm_Productos.txtNomProd = "" Then
     If Not recs.EOF Then
         
-        C = recs!minID
+        C = recs!minId
         TempVars.Add "Caja", C
        'Form_frm_ControlCaja.txtIdMovimiento.Value = C
     End If
@@ -414,7 +414,7 @@ Sub llenarcmbCaja()
 
 End Sub
 Sub ActualizarSaldoCaja()
-    On Error GoTo ManejoErrores
+'    'On Error GoTo ManejoErrores
     
     ' Declaración de variables
     Dim db As DAO.Database
@@ -428,7 +428,7 @@ Sub ActualizarSaldoCaja()
     Dim idMovi As Long
     ' Abrir base de datos y conjuntos de registros
     Set db = CurrentDb()
-    Set rsMovimientos = db.OpenRecordset("SELECT * FROM MovimientosCaja ORDER BY fechaMov, IDMov", dbOpenDynaset)
+    Set rsMovimientos = db.OpenRecordset("SELECT * FROM MovimientosCaja ORDER BY  IDMov", dbOpenDynaset)
     Set rsSaldoCaja = db.OpenRecordset("SELECT * FROM SaldoCaja", dbOpenDynaset)
     
     ' Obtener el último saldo inicial de SaldoCaja
@@ -440,7 +440,7 @@ Sub ActualizarSaldoCaja()
     
     DoCmd.SetWarnings False
     ' Recorrer registros de Movimientos
-    Do While Not rsMovimientos.EOF
+    'Do While Not rsMovimientos.EOF
         ' Calcular el nuevo saldo
         If rsMovimientos!tipoMov = "ingreso" And rsMovimientos!IdMov = idMovi Then
             Fecha = rsMovimientos!fechaMov
@@ -471,23 +471,23 @@ Sub ActualizarSaldoCaja()
         'saldoInicial = nuevoSaldo
         
         ' Avanzar al siguiente registro
-        rsMovimientos.MoveNext
-    Loop
+        'rsMovimientos.MoveNext
+    'Loop
     DoCmd.SetWarnings True
     ' Cerrar conjuntos de registros y base de datos
     rsMovimientos.Close
     rsSaldoCaja.Close
     db.Close
     
-    MsgBox "Actualización completada con éxito.", vbInformation, "Saldo Caja"
-    Exit Sub
+    'MsgBox "Actualización completada con éxito.", vbInformation, "Saldo Caja"
+    
 
-ManejoErrores:
-    MsgBox "Ocurrió un error: " & Err.Description, vbCritical, "Error"
-    On Error Resume Next
-    If Not rsMovimientos Is Nothing Then rsMovimientos.Close
-    If Not rsSaldoCaja Is Nothing Then rsSaldoCaja.Close
-    If Not db Is Nothing Then db.Close
+'ManejoErrores:
+'    MsgBox "Ocurrió un error: " & Err.Description, vbCritical, "Error"
+'    On Error Resume Next
+'    If Not rsMovimientos Is Nothing Then rsMovimientos.Close
+'    If Not rsSaldoCaja Is Nothing Then rsSaldoCaja.Close
+'    If Not db Is Nothing Then db.Close
 End Sub
 
 Sub IdMov()
