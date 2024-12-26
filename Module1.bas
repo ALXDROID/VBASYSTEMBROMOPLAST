@@ -207,19 +207,84 @@ Form_frm_Pedidos.ListaPedido.RowSource = ""
 
 
 End Sub
+'Sub EnviarDatosAMySQL()
+'    Dim coneccion As ADODB.Connection
+'    Dim sqlInsert As String
+'    Dim rs As ADODB.Recordset
+'    Dim maxID As Integer
+'    Dim Nombre As String
+'    Dim Descripcion As String
+'    Dim listIndex As Integer
+'    Dim i As Integer
+'    Dim totalCantidadListBox As Integer
+'    Dim cantidadActual As Integer
+'    Dim conta As Integer
+'
+'    ' Inicializar el total de la cantidad en el ListBox
+'    totalCantidadListBox = 0
+'
+'    ' Configurar la conexión
+'    Set coneccion = New ADODB.Connection
+'    coneccion.ConnectionString = "Driver={MySQL ODBC 8.4 Unicode Driver};Server=localhost;Database=test3;User=root;Option=3;"
+'    coneccion.Open
+'
+'    ' Obtener el valor máximo actual de IDAuto en la tabla MySQL
+'    Set rs = New ADODB.Recordset
+'    rs.Open "SELECT MAX(IDAuto) AS maxID FROM orden", coneccion, adOpenStatic, adLockReadOnly
+'    If Not rs.EOF Then
+'        If IsNull(rs!maxID) Then
+'            maxID = 0
+'        Else
+'            maxID = rs!maxID
+'        End If
+'    Else
+'        maxID = 0
+'    End If
+'    rs.Close
+'
+'    ' Calcular el total de la cantidad en el ListBox
+'    For listIndex = 0 To Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.ListCount - 1      ' Form_Form1.List2.ListCount - 1
+'        totalCantidadListBox = Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.Column(0, listIndex)     'totalCantidadListBox + 1  'Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.Column(0, listIndex)
+'    Next listIndex
+'
+'    ' Inicializar la cantidad actual
+'    'cantidadActual = Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.Column(0, listIndex)
+''    conta = 1
+'    ' Iterar a través de todos los elementos del ListBox (sin importar si están seleccionados)
+'    For listIndex = 0 To Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.ListCount - 1
+'        ' Extraer los datos del ListBox
+'        Nombre = Form_frm_Clientes.txtNombre.Value '& " " & Form_frm_ClientesPedido.txt_apellido_cliente.Value
+'        Descripcion = Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.Column(1, listIndex)
+'        cantidadActual = Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.Column(0, listIndex)
+'        ' Insertar una fila por cada cantidad de la fila del ListBox
+'        For i = 1 To Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.ListCount - 1
+'            maxID = maxID + 1 ' Incrementar el valor de IDAuto
+'            sqlInsert = "INSERT INTO orden (IDAuto, cantidad, nomCliente, nomProd) VALUES (" & maxID & ", '" & conta & " de " & totalCantidadListBox & "', '" & Nombre & "', '" & Descripcion & "');"
+'            coneccion.Execute sqlInsert
+'            'cantidadActual = cantidadActual + 1
+'            'conta = conta + 1
+'        Next i
+'    Next listIndex
+'
+'    ' Cerrar la conexión
+'    coneccion.Close
+'    Set coneccion = Nothing
+'
+'    MsgBox "Datos enviados a MySQL correctamente."
+'End Sub
 Sub EnviarDatosAMySQL()
     Dim coneccion As ADODB.Connection
     Dim sqlInsert As String
     Dim rs As ADODB.Recordset
     Dim maxID As Integer
     Dim Nombre As String
-    Dim Descripcion As String
-    Dim listIndex, i As Integer
-    Dim totalCantidadListBox As Integer
+    Dim Descripcion As Variant
+    Dim dictProductos As Object
+    Dim listIndex As Integer
     Dim cantidadActual As Integer
     
-    ' Inicializar el total de la cantidad en el ListBox
-    totalCantidadListBox = 0
+    ' Crear un diccionario para acumular las cantidades por producto
+    Set dictProductos = CreateObject("Scripting.Dictionary")
     
     ' Configurar la conexión
     Set coneccion = New ADODB.Connection
@@ -240,32 +305,32 @@ Sub EnviarDatosAMySQL()
     End If
     rs.Close
     
-    ' Calcular el total de la cantidad en el ListBox
-    For listIndex = 0 To Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.ListCount - 1       ' Form_Form1.List2.ListCount - 1
-        totalCantidadListBox = totalCantidadListBox + Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.Column(0, listIndex)
-    Next listIndex
-    
-    ' Inicializar la cantidad actual
-    cantidadActual = 1
-    
-    ' Iterar a través de todos los elementos del ListBox (sin importar si están seleccionados)
+    ' Recorrer los elementos del ListBox y acumular las cantidades en el diccionario
     For listIndex = 0 To Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.ListCount - 1
-        ' Extraer los datos del ListBox
-        Nombre = Form_frm_Clientes.txtNombre.Value '& " " & Form_frm_ClientesPedido.txt_apellido_cliente.Value
         Descripcion = Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.Column(1, listIndex)
+        cantidadActual = Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.Column(0, listIndex)
         
-        ' Insertar una fila por cada cantidad de la fila del ListBox
-        For i = 1 To Form_frm_Clientes!frm_Pedidos.Form!ListaPedido.Column(0, listIndex)
-            maxID = maxID + 1 ' Incrementar el valor de IDAuto
-            sqlInsert = "INSERT INTO orden (IDAuto, cantidad, nomCliente, nomProd) VALUES (" & maxID & ", '" & cantidadActual & " de " & totalCantidadListBox & "', '" & Nombre & "', '" & Descripcion & "');"
-            coneccion.Execute sqlInsert
-            cantidadActual = cantidadActual + 1
-        Next i
+        ' Si el producto ya está en el diccionario, sumar la cantidad
+        If dictProductos.exists(Descripcion) Then
+            dictProductos(Descripcion) = dictProductos(Descripcion) + cantidadActual
+        Else
+            dictProductos.Add Descripcion, cantidadActual
+        End If
     Next listIndex
+    
+    ' Insertar los registros acumulados en la base de datos
+    Nombre = Form_frm_Clientes.txtNombre.Value
+    
+    For Each Descripcion In dictProductos.Keys
+        maxID = maxID + 1 ' Incrementar el valor de IDAuto
+        sqlInsert = "INSERT INTO orden (IDAuto, cantidad, nomCliente, nomProd) VALUES (" & maxID & ", " & dictProductos(Descripcion) & ", '" & Nombre & "', '" & Descripcion & "');"
+        coneccion.Execute sqlInsert
+    Next Descripcion
     
     ' Cerrar la conexión
     coneccion.Close
     Set coneccion = Nothing
+    Set dictProductos = Nothing
     
     MsgBox "Datos enviados a MySQL correctamente."
 End Sub
