@@ -288,7 +288,14 @@ Sub EnviarDatosAMySQL()
     
     ' Configurar la conexión
     Set coneccion = New ADODB.Connection
-    coneccion.ConnectionString = "Driver={MySQL ODBC 8.4 Unicode Driver};Server=localhost;Database=test3;User=root;Option=3;"
+'    coneccion.ConnectionString = "Driver={MySQL ODBC 9.1 Unicode Driver};" & _
+'                             "Server=35.212.162.221;" & _
+'                             "Port=3306;" & _
+'                             "Database=railway;" & _
+'                             "User=root;" & _
+'                             "Password=kUfcvmpoRcVdxKgpoioLkbTIxmEizFwt;" & _
+'                             "Option=3;"
+    coneccion.ConnectionString = "DSN=railmysql;" ' Usamos el DSN configurado
     coneccion.Open
     
     ' Obtener el valor máximo actual de IDAuto en la tabla MySQL
@@ -470,3 +477,26 @@ End Sub
 Function cerra()
 DoCmd.Close acForm, "frm_ControlCaja", acSaveNo
 End Function
+Sub ConectarMySQL()
+    Dim conn As Object
+    Dim rs As Object
+    Dim strConexion As String
+    
+    ' Usar DSN configurado en ODBC
+    strConexion = "DSN=railmysql;" ' Nombre del DSN
+    
+    ' Crear objeto de conexión
+    Set conn = CreateObject("ADODB.Connection")
+    conn.Open strConexion
+    
+    ' Comprobar si la conexión fue exitosa
+    If conn.State = 1 Then
+        MsgBox "Conexión exitosa"
+    Else
+        MsgBox "Error en la conexión"
+    End If
+    
+    ' Cerrar la conexión
+    conn.Close
+    Set conn = Nothing
+End Sub
